@@ -86,6 +86,39 @@ class TokenBlocklist(db.Model):
     created_at = db.Column(db.DateTime, nullable=False)
 
 
+def ensure_user_exists():
+    username = get_jwt_identity()
+
+    sql = text("SELECT id FROM user WHERE username = :username")
+    user = db.session.execute(sql, {"username": username}).fetchone()
+
+    if not user:
+        flash("Your account has been removed. Please log in again.", "danger")
+        resp = redirect(url_for("login_page"))
+        unset_jwt_cookies(resp)
+        return resp
+
+    return None
+
+@app.before_request
+@jwt_required(optional=True)
+def auto_logout_deleted_user():
+    if request.endpoint in ('login_page', 'do_login', 'static'):
+        return
+
+    username = get_jwt_identity()
+    if not username:
+        return
+
+    sql = text("SELECT id FROM user WHERE username = :username")
+    user = db.session.execute(sql, {"username": username}).fetchone()
+
+    if not user:
+        resp = redirect(url_for("login_page"))
+        unset_jwt_cookies(resp)
+        flash("Your account was deleted. Please contact admin.", "warning")
+        return resp
+
 
 @jwt.unauthorized_loader
 def missing_jwt_callback(error):

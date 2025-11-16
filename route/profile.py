@@ -1,4 +1,4 @@
-from app import app, db
+from app import app, db, ensure_user_exists
 from flask import render_template, request, redirect, url_for, flash
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import text
@@ -14,6 +14,9 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 @app.route('/profile')
 @jwt_required()
 def profile():
+    check=ensure_user_exists()
+    if check:
+        return check
     user = get_jwt_identity()
     search = request.args.get('q', '').strip()
 
