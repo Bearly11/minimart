@@ -159,13 +159,14 @@ def register():
         em =text("SELECT * FROM user WHERE email=:email")
         em_result=db.session.execute(em, {'email': email}).fetchone()
         if em_result:
-            return "Email already registered", 400
+            flash('Email already registered!', 'warning')
+            return redirect(url_for('register'))
 
         password_hash = generate_password_hash(password)
         new_user = User(username=username, password=password_hash, email=email)
         db.session.add(new_user)
         db.session.commit()
-        return redirect(url_for('login'))
+        return redirect(url_for('login_page'))
     return render_template('register.html')
 
 @app.get('/')
