@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mini Mart</title>
+    {% include "style.html" %}
+
+    <!-- Expose CSRF token to JS -->
+    <meta name="csrf-token" content="{{ csrf_token or '' }}">
+</head>
+<body>
+<div id="app">
+
+    <!-- Navbar -->
+    <div class="container-fluid p-0 m-0">
+        <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #e3f2fd;">
+            <a class="navbar-brand" href="/">Mini Mart</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active"><a class="nav-link" href="/profile">profile</a></li>
+                    <li class="nav-item active"><a class="nav-link" href="/product_list">Product</a></li>
+                    <li class="nav-item active"><a class="nav-link" href="/category_list">Category</a></li>
+                    <li class="nav-item active"><a class="nav-link" href="/sales_form">Sale</a></li>
+                    <li class="nav-item active"><a class="nav-link" href="/report">Report</a></li>
+
+                </ul>
+                <ul class="navbar-nav mr-auto">
+                    {% if user %}
+                        <li class="nav-item active"><a class="nav-link" href="/logout">Logout ({{ user }})</a></li>
+                    {% else %}
+                        <li class="nav-item active"><a class="nav-link" href="/login">Login</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    {% block main_content %}{% endblock %}
+
+</div>
+
+{% include "script.html" %}
+
+
+<script>
+    const {createApp} = Vue;
+
+    createApp({
+            delimiters: ['[[', ']]'],
+            data() {
+
+                return {
+                    items: [
+                        {product_name: '', quantity: 1}
+                    ],
+                    csrfToken: document.querySelector('meta[name="csrf-token"]').content
+                }
+            },
+            methods: {
+                addItem() {
+                    this.items.push({product_name: '', quantity: 1});
+                    this.saveToStorage();
+                },
+
+                async removeItem(index) {
+                    const result = await Swal.fire({
+                        title: "Are you sure?",
+                        text: "You won’t be able to revert this!",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#3085d6",
+                        cancelButtonColor: "#d33",
+                        confirmButtonText: "Yes, remove it!"
+                    });
+
+                    if (result.isConfirmed) {
+                        this.items.splice(index, 1);
+                        this.saveToStorage();
+
+                        Swal.fire({
+                            title: "Removed!",
+                            text: "The item has been deleted.",
+                            icon: "success",
+                            timer: 1200,
+                            showConfirmButton: false
+                        });
+                    }
+                },
+                async resetPassword(userId, username) {
+                    const {value: newPassword} = await Swal.fire({
+                        title: `Reset password for ${username}`,
+                        input: "password",
+                        inputLabel: "Enter new password",
+                        inputPlaceholder: "New Password",
+                        inputAttributes: {minlength: 3},
+                        showCancelButton: true,
+                        confirmButtonText: "Reset",
+                    });
+
+                    if (!newPassword) return;
+
+                    const form = document.createElement("form");
+                    form.method = "post";
+                    form.action = `/reset_password/${userId}`;
+
+                    const input = document.createElement("input");
+                    input.type = "hidden";
+                    input.name = "new_password";
+                    input.value = newPassword;
+
+                    form.appendChild(input);
+                    document.body.appendChild(form);
+                    form.submit();
+                },
+
+                async confirmDelete(productId, productName) {
+                    const result = await Swal.fire({
+                        title: `Delete ${productName}?`,
+                        text: "This product will be permanently deleted!",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#3085d6",
+                        cancelButtonColor: "#d33",
+                        confirmButtonText: "Yes, delete it!"
+                    });
+
+                    if (result.isConfirmed) {
+                        const form = document.getElementById('deleteForm' + productId);
+                        if (form) {
+                            form.submit();
+                        }
+                    }
+                },
+
+
+                saveToStorage() {
+                    localStorage.setItem('saleFormData', JSON.stringify(this.items));
+                }
+                ,
+                loadFromStorage() {
+                    const data = localStorage.getItem('saleFormData');
+                    if (data) this.items = JSON.parse(data);
+                }
+                ,
+                clearStorage() {
+                    localStorage.removeItem('saleFormData');
+                }
+                ,
+
+                async submitSale() {
+                    try {
+                        const response = await this.postWithAutoRefresh('/create_sale', this.items);
+                        if (response.ok) {
+                            Swal.fire("Success!", "Sale created successfully!", "success");
+                            this.clearStorage();
+                            window.location.href = '/sales_form';
+                        } else {
+                            const data = await response.json();
+                            Swal.fire("Error", data.msg || "Unknown error", "error");
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        Swal.fire("Error", "Request failed.", "error");
+                    }
+                }
+                ,
+
+                async postWithAutoRefresh(url, data) {
+                    let response = await fetch(url, {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': this.csrfToken
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (response.status === 401) {
+                        const refreshResp = await fetch('/refresh', {
+                            method: 'POST',
+                            credentials: 'include',
+                            headers: {'X-CSRF-TOKEN': this.csrfToken}
+                        });
+
+                        if (refreshResp.ok) {
+                            response = await fetch(url, {
+                                method: 'POST',
+                                credentials: 'include',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': this.csrfToken
+                                },
+                                body: JSON.stringify(data)
+                            });
+                        } else {
+                            Swal.fire("Session Expired", "Please log in again.", "warning");
+                            window.location.href = '/login';
+                        }
+                    }
+                    return response;
+                }
+            }
+            ,
+
+            watch: {
+                items: {
+                    handler() {
+                        this.saveToStorage();
+                    }
+                    ,
+                    deep: true
+                }
+            }
+            ,
+
+            mounted() {
+                this.loadFromStorage();
+            }
+        }
+    ).mount('#app');
+    window.confirmDelete = vm.confirmDelete;
+</script>
+
+</body>
+</html>

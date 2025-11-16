@@ -1,0 +1,49 @@
+{% extends "master.html" %}
+{% block main_content %}
+    <div class="container">
+        <div class="d-flex align-items-center justify-content-between mb-3" style="padding-top: 12px">
+            <h4 class="mb-0">Category</h4>
+            <a href="/add_category_form" class="btn btn-primary">+ New Category</a>
+        </div>
+
+
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle">
+                <thead class="thead-light">
+                <tr>
+                    <th style="width:60px">ID</th>
+                    <th style="width:84px">Category Name</th>
+                    <th style="width:180px">Actions</th>
+
+                </tr>
+                </thead>
+                <tbody>
+                {% for c in categories %}
+                    <tr>
+                        <td>{{ c.category_id }}</td>
+                        <td class="text-truncate" style="max-width:360px"
+                            title="{{ c.category_name }}">{{ c.category_name }}</td>
+
+
+                        <td>
+                            <a href="{{ url_for('update_category_form', category_id=c['category_id']) }}"
+                               class="btn btn-sm btn-outline-primary">Edit</a>
+                            <form action="{{ url_for('delete_category', category_id=c.category_id) }}" method="post"
+                                  class="d-inline"
+                                  onsubmit="return confirm('Delete {{ c.category_name }}?');">
+                                <button class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">No category found.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "master.html" %}
+{% block main_content %}
+<div class="container mt-4">
+    <h4>📊 Sales Reports</h4>
+    <p class="text-muted">Select a report type below:</p>
+
+    <div class="list-group mt-3">
+        <a href="{{ url_for('report_daily') }}" class="list-group-item list-group-item-action">
+            📅 Daily Sales
+        </a>
+        <a href="{{ url_for('report_weekly') }}" class="list-group-item list-group-item-action">
+            🗓 Weekly Sales
+        </a>
+        <a href="{{ url_for('report_monthly') }}" class="list-group-item list-group-item-action">
+            📆 Monthly Sales
+        </a>
+        <a href="{{ url_for('report_saleby', by='product') }}" class="list-group-item list-group-item-action">
+            📦 Sales by Product
+        </a>
+        <a href="{{ url_for('report_saleby', by='category') }}" class="list-group-item list-group-item-action">
+            🏷 Sales by Category
+        </a>
+        <a href="{{ url_for('report_saleby', by='user') }}" class="list-group-item list-group-item-action">
+            👤 Sales by User
+        </a>
+    </div>
+</div>
+{% endblock %}

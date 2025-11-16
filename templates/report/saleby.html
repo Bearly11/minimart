@@ -1,0 +1,70 @@
+{% extends "master.html" %}
+{% block main_content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4>
+            {% if criteria == 'product' %}📦 Sales by Product{% endif %}
+            {% if criteria == 'category' %}🏷 Sales by Category{% endif %}
+            {% if criteria == 'user' %}👤 Sales by User{% endif %}
+        </h4>
+        <a href="{{ url_for('report_home') }}" class="btn btn-sm btn-outline-secondary">← Back</a>
+    </div>
+
+    <div class="btn-group mb-3">
+        <a href="{{ url_for('report_saleby', by='product') }}" class="btn btn-outline-primary {% if criteria=='product' %}active{% endif %}">
+            Product
+        </a>
+        <a href="{{ url_for('report_saleby', by='category') }}" class="btn btn-outline-primary {% if criteria=='category' %}active{% endif %}">
+            Category
+        </a>
+        <a href="{{ url_for('report_saleby', by='user') }}" class="btn btn-outline-primary {% if criteria=='user' %}active{% endif %}">
+            User
+        </a>
+    </div>
+
+    <table class="table table-bordered table-striped">
+        <thead class="thead-light">
+            <tr>
+                {% if criteria == 'product' %}
+                    <th>Product Name</th>
+                    <th class="text-end">Quantity</th>
+                    <th class="text-end">Total Sales ($)</th>
+                {% elif criteria == 'category' %}
+                    <th>Category</th>
+                    <th class="text-end">Quantity</th>
+                    <th class="text-end">Total Sales ($)</th>
+                {% elif criteria == 'user' %}
+                    <th>Username</th>
+                    <th class="text-end">Sales Count</th>
+                    <th class="text-end">Total Sales ($)</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+        {% for row in data %}
+            {% if criteria == 'product' %}
+                <tr>
+                    <td>{{ row.product_name }}</td>
+                    <td class="text-end">{{ row.total_qty }}</td>
+                    <td class="text-end">${{ '%.2f'|format(row.total_sales or 0) }}</td>
+                </tr>
+            {% elif criteria == 'category' %}
+                <tr>
+                    <td>{{ row.category_name }}</td>
+                    <td class="text-end">{{ row.total_qty }}</td>
+                    <td class="text-end">${{ '%.2f'|format(row.total_sales or 0) }}</td>
+                </tr>
+            {% elif criteria == 'user' %}
+                <tr>
+                    <td>{{ row.username }}</td>
+                    <td class="text-end">{{ row.sale_count }}</td>
+                    <td class="text-end">${{ '%.2f'|format(row.total_sales or 0) }}</td>
+                </tr>
+            {% endif %}
+        {% else %}
+            <tr><td colspan="3" class="text-center text-muted py-3">No data available</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

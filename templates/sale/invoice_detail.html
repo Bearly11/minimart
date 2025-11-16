@@ -1,0 +1,64 @@
+{% extends "master.html" %}
+{% block main_content %}
+    <div class="container mt-4">
+        <h4>Invoice #{{ sale.sales_id }}</h4>
+        <p><strong>User ID:</strong> {{ sale.user_id }}</p>
+        <p><strong>Date:</strong> {{ sale.sale_date }}</p>
+        <p><strong>Total:</strong> ${{ '%.2f'|format(sale.total_amount) }}</p>
+
+        <hr>
+
+        <h5>Sale Items</h5>
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th>Product</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Total</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in sale_items %}
+                <tr>
+                    <td>{{ item.product_name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>${{ '%.2f'|format(item.unit_price) }}</td>
+                    <td>${{ '%.2f'|format(item.unit_price * item.quantity) }}</td>
+                    <td>
+                        <form method="post"
+                              action="{{ url_for('delete_sale_item', sale_item_id=item.sale_item_id, sales_id=sale.sales_id) }}"
+                              class="d-inline">
+                            <button class="btn btn-sm btn-outline-danger"
+                                    onclick="return confirm('Delete {{ item.product_name }}?');">Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted">No products in this invoice.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <hr>
+
+        <h5>Add Product</h5>
+        <form method="post" action="{{ url_for('sale_details', sales_id=sale.sales_id) }}" class="form-inline">
+            <select name="product_id" class="form-control mr-2">
+                <option value="">Select product</option>
+                {% for p in products %}
+                    <option value="{{ p.product_id }}">{{ p.product_name }}</option>
+                {% endfor %}
+            </select>
+            <input type="number" name="quantity" class="form-control mr-2" value="1" min="1">
+            <button  class="btn btn-primary">Add</button>
+        </form>
+
+        <hr>
+        <a href="{{ url_for('sales') }}" class="btn btn-secondary mt-3">← Back to Sales</a>
+    </div>
+{% endblock %}

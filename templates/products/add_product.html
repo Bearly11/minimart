@@ -1,0 +1,55 @@
+{% extends "master.html" %}
+{% block main_content %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="container" style="max-width:800px">
+        <h4 class="mb-3">New Product</h4>
+        <form method="post" enctype="multipart/form-data" action="/create_product">
+            <div class="form-group mb-3">
+                <label>Product Name *</label>
+                <input name="product_name" class="form-control" required>
+            </div>
+
+            <div class="form-group mb-3">
+                <label>Category</label>
+                <select name="category_name" class="form-control" required>
+                    <option value="">-- Select Category --</option>
+                    {% for c in categories %}
+                        <option value="{{ c }}">{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group mb-3">
+                <label>Price</label>
+                <input name="price" type="number" step="0.01" class="form-control" required>
+            </div>
+
+            <div class="form-group mb-3">
+                <label>Upload Image</label>
+                <input name="image_url" type="file" accept="image/*" class="form-control">
+            </div>
+
+            <div class="form-group mb-3">
+                <label>Stock</label>
+                <input name="stock" type="number" class="form-control" value="0">
+            </div>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary">Create</button>
+                <a href="/product_list" class="btn btn-light">Cancel</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

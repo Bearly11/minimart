@@ -1,0 +1,53 @@
+{% extends "master.html" %}
+{% block main_content %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="container" style="max-width:800px">
+        <h4 class="mb-3">Create Profile</h4>
+
+        <form method="post" enctype="multipart/form-data" action="/create_profile">
+
+            <div class="form-group mb-3">
+                <label>Username *</label>
+                <input name="username" class="form-control" required>
+            </div>
+
+            <div class="form-group mb-3">
+                <label>Password *</label>
+                <input name="password" type="password" class="form-control" required>
+            </div>
+
+            <div class="form-group mb-3">
+                <label>Email *</label>
+                <input name="email" type="email" class="form-control" required>
+            </div>
+
+            <div class="form-group mb-3">
+                <label>Address</label>
+                <input name="address" class="form-control">
+            </div>
+
+            <div class="form-group mb-3">
+                <label>Upload Profile Image</label>
+                <input name="user_image" type="file" accept="image/*" class="form-control">
+            </div>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary">Create</button>
+                <a href="/profile" class="btn btn-light">Cancel</a>
+            </div>
+
+        </form>
+    </div>
+{% endblock %}

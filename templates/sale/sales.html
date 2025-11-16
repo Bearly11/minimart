@@ -1,0 +1,52 @@
+{% extends "master.html" %}
+{% block main_content %}
+    <div class="container">
+        <div class="d-flex align-items-center justify-content-between mb-3" style="padding-top: 12px">
+            <h4 class="mb-0">Sale</h4>
+            <a href="/create_sale_form" class="btn btn-primary">+ Create sales</a>
+        </div>
+
+
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle">
+                <thead class="thead-light">
+                <tr>
+                    <th style="width:60px">ID</th>
+                    <th style="width:84px">User ID</th>
+                    <th style="width:180px">Sale Date</th>
+                    <th style="width:180px">Total Amount</th>
+                    <th style="width:180px">Actions</th>
+
+                </tr>
+                </thead>
+                <tbody>
+                {% for s in sales %}
+                    <tr>
+                        <td>{{ s.sales_id }}</td>
+                        <td>{{ s.user_id }}</td>
+                        <td>{{ s.sale_date }}</td>
+                        <td>${{ '%.2f'|format(s.total_amount) }}</td>
+
+
+                        <td>
+                            <a href="{{ url_for('sale_details', sales_id=s['sales_id']) }}"
+                               class="btn btn-sm btn-outline-primary">View Invoice</a>
+                            <form action="{{ url_for('delete_sale', sales_id=s.sales_id) }}" method="post"
+                                  class="d-inline"
+                                  onsubmit="return confirm('Delete {{ s.sales_id }}?');">
+                                <button class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">No category found.</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+{% endblock %}

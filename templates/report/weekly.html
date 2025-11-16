@@ -1,0 +1,32 @@
+{% extends "master.html" %}
+{% block main_content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4>🗓 Weekly Sales Report</h4>
+        <a href="{{ url_for('report_home') }}" class="btn btn-sm btn-outline-secondary">← Back</a>
+    </div>
+
+    <table class="table table-bordered table-striped">
+        <thead class="thead-light">
+            <tr>
+                <th>Week</th>
+                <th>Start</th>
+                <th>End</th>
+                <th class="text-end">Total Sales ($)</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for row in data %}
+            <tr>
+                <td>{{ row.week_label }}</td>
+                <td>{{ row.week_start }}</td>
+                <td>{{ row.week_end }}</td>
+                <td class="text-end">${{ '%.2f'|format(row.total or 0) }}</td>
+            </tr>
+        {% else %}
+            <tr><td colspan="4" class="text-center text-muted py-3">No data available</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
